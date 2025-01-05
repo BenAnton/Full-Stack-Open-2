@@ -37,6 +37,10 @@ let persons = [
   },
 ];
 
+app.get("/", (request, response) => {
+  response.send("<h1>Phonebook</h1>");
+});
+
 // 3.1: Phonebook backend step 1
 app.get("/api/persons", (request, response) => {
   response.json(persons);
