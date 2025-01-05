@@ -1,0 +1,26 @@
+{
+  "name": "phonebook-backend",
+  "version": "0.0.1",
+  "description": "Full Stack Open Course exercises 3.1+",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BenAnton/Full-Stack-Open-2.git"
+  },
+  "author": "Ben",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BenAnton/Full-Stack-Open-2/issues"
+  },
+  "homepage": "https://github.com/BenAnton/Full-Stack-Open-2#readme",
+  "dependencies": {
+    "express": "^4.21.2",
+    "morgan": "^1.10.0",
+    "nodemon": "^3.1.9"
+  }
+}
