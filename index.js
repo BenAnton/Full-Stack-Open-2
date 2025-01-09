@@ -2,6 +2,8 @@ const express = require("express");
 const app = express();
 const morgan = require("morgan");
 const cors = require("cors");
+require("dotenv").config();
+const Person = require("./models/persons");
 
 app.use(express.json());
 app.use(cors());
@@ -11,102 +13,134 @@ morgan.token("data", (req) => {
   return req.method === "POST" ? JSON.stringify(req.body) : "";
 });
 
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message);
+
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformed id" });
+  }
+  if (error.name === "ValidationError") {
+    return response.status(400).json({ error: error.message });
+  }
+
+  next(error);
+};
+
 app.use(
   morgan(":method :url :status :res[content-length] - :response-time ms :data")
 );
 
-let persons = [
-  {
-    id: "1",
-    name: "Arto Hellas",
-    number: "040-123456",
-  },
-  {
-    id: "2",
-    name: "Ada Lovelace",
-    number: "39-44-5323523",
-  },
-  {
-    id: "3",
-    name: "Dan Abramov",
-    number: "12-43-234345",
-  },
-  {
-    id: "4",
-    name: "Mary Poppendieck",
-    number: "39-23-6423122",
-  },
-];
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: "unknown endpoint" });
+};
 
 app.get("/", (request, response) => {
   response.send("<h1>Phonebook</h1>");
 });
 
-// 3.1: Phonebook backend step 1
-app.get("/api/persons", (request, response) => {
-  response.json(persons);
+// Get all
+app.get("/api/persons", (request, response, next) => {
+  Person.find({})
+    .then((persons) => {
+      response.json(persons);
+    })
+    .catch((error) => next(error));
 });
 
-//   3.2: Phonebook backend step 2
-app.get("/info", (request, response) => {
-  console.log("Info Route Start");
-  let personsLength = persons.length;
-  const now = new Date().toString();
-
-  response.send(
-    `<p>Phonebook has info for ${personsLength} people</p><p>${now}</p>`
-  );
+// Info page
+app.get("/info", (request, response, next) => {
+  Person.countDocuments({})
+    .then((count) => {
+      const now = new Date().toString();
+      response.send(
+        `<p>Phonebook has info for ${count} people</p><p>${now}</p>`
+      );
+    })
+    .catch((error) => next(error));
 });
 
-// 3.3: Phonebook backend step 3
-app.get("/api/persons/:id", (request, response) => {
+// Find a Person by ID
+app.get("/api/persons/:id", (request, response, next) => {
   const id = request.params.id;
-  const person = persons.find((persons) => persons.id === id);
 
-  if (person) {
-    response.json(person);
-  } else {
-    response.status(404).end();
-  }
+  Person.findById(id)
+    .then((person) => {
+      if (person) {
+        response.json(person);
+      } else {
+        response.status(404).end();
+      }
+    })
+    .catch((error) => next(error));
 });
 
-// 3.4: Phonebook backend step 4
-app.delete("/api/persons/:id", (request, response) => {
+// Delete Person
+app.delete("/api/persons/:id", (request, response, next) => {
   const id = request.params.id;
-  persons = persons.filter((person) => person.id !== id);
 
-  response.status(204).end();
+  console.log("Attempting delete: ", id);
+
+  Person.findByIdAndDelete(id)
+    .then((deletedPerson) => {
+      console.log("Delete result: ", deletedPerson);
+      if (deletedPerson) {
+        response.status(204).end();
+      } else {
+        response.status(404).json({ error: "Person not found" });
+      }
+    })
+    .catch((error) => {
+      console.error("Delete Error: ", error);
+      next(error);
+    });
 });
 
-// 3.5: Phonebook backend step 5 + 6
-app.post("/api/persons", (request, response) => {
+// POST new Person
+app.post("/api/persons", (request, response, next) => {
   const body = request.body;
-  //    Step 6
+
   if (!body.name || !body.number) {
     return response.status(400).json({
       error: "Name or Number missing",
     });
   }
-  const nameExists = persons.some((person) => person.name === body.name);
-  //    Step 6
-  if (nameExists) {
-    return response.status(400).json({
-      error: "name already exists",
-    });
-  }
-
-  const newPerson = {
-    id: (Math.random() * 10000).toFixed(0),
+  const newPerson = new Person({
     name: body.name,
     number: body.number,
-  };
+  });
 
-  persons.push(newPerson);
-
-  response.json(newPerson);
+  newPerson
+    .save()
+    .then((savedPerson) => {
+      response.json(savedPerson);
+    })
+    .catch((error) => {
+      if (error.name === "ValidationError") {
+        return response.status(400).json({ error: error.message });
+      }
+      next(error);
+    });
 });
 
-const PORT = process.env.PORT || 3001;
+app.put("/api/persons/:id", (request, response, next) => {
+  const { content, important } = request.body;
+
+  Person.findByIdAndUpdate(
+    request.params.id,
+    { name, number },
+    { new: true, runValidators: true, context: "query" }
+  )
+
+    .then((updatedPersons) => {
+      response.json(updatedPersons);
+    })
+    .catch((error) => next(error));
+});
+
+app.use(unknownEndpoint);
+app.use(errorHandler);
+
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on Port: ${PORT}`);
 });
