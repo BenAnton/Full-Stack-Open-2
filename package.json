@@ -1,35 +1,26 @@
 {
-  "name": "phonebook-backend",
-  "version": "0.0.1",
-  "description": "Full Stack Open Course exercises 3.1+",
+  "name": "notebackend",
+  "version": "1.0.0",
+  "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js",
+    "start": "node index.js",
     "lint": "eslint ."
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/BenAnton/Full-Stack-Open-2.git"
-  },
-  "author": "Ben",
+  "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/BenAnton/Full-Stack-Open-2/issues"
-  },
-  "homepage": "https://github.com/BenAnton/Full-Stack-Open-2#readme",
   "dependencies": {
     "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "mongoose": "^8.9.3",
-    "morgan": "^1.10.0",
-    "nodemon": "^3.1.9"
+    "dotenv": "^16.4.1",
+    "express": "^4.18.2",
+    "mongoose": "^8.1.1"
   },
   "devDependencies": {
-    "@stylistic/eslint-plugin-js": "^2.12.1",
-    "eslint": "^9.17.0",
-    "globals": "^15.14.0"
+    "@flydotio/dockerfile": "^0.5.0",
+    "@stylistic/eslint-plugin-js": "^1.6.1",
+    "eslint": "^8.56.0",
+    "nodemon": "^3.0.3"
   }
 }
